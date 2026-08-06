@@ -74,14 +74,14 @@
         <p class="text-xs text-slate-500 mt-1">Sistem Pengumpulan & Pemantauan Data Terpadu</p>
       </div>
 
-      <form id="form-login" class="space-y-5">
+      <form id="form-login" class="space-y-5" autocomplete="off">
         <div>
           <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Username</label>
           <div class="relative">
             <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
               <i class="fa-solid fa-user text-sm"></i>
             </span>
-            <input type="text" id="login-username" required placeholder="Masukkan username" class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-slate-50/50">
+            <input type="text" id="login-username" autocomplete="off" required placeholder="Masukkan username" class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-slate-50/50">
           </div>
         </div>
 
@@ -91,7 +91,10 @@
             <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
               <i class="fa-solid fa-lock text-sm"></i>
             </span>
-            <input type="password" id="login-password" autocomplete="current-password" required placeholder="••••••••" class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-slate-50/50">
+            <input type="password" id="login-password" autocomplete="current-password" required placeholder="••••••••" class="w-full pl-10 pr-10 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-slate-50/50">
+            <button type="button" onclick="togglePasswordVisibility('login-password', 'icon-toggle-login-pass')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none" title="Lihat/Sembunyikan Password">
+              <i id="icon-toggle-login-pass" class="fa-solid fa-eye text-sm"></i>
+            </button>
           </div>
         </div>
 
@@ -543,11 +546,22 @@
               <form id="form-change-password" class="space-y-4">
                 <div>
                   <label class="block text-xs font-semibold text-slate-600 mb-1">Password Saat Ini</label>
-                  <input type="password" id="pass-old" autocomplete="current-password" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                  <div class="relative">
+                    <input type="password" id="pass-old" autocomplete="current-password" required class="w-full pl-3.5 pr-10 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    <button type="button" onclick="togglePasswordVisibility('pass-old', 'icon-toggle-old-pass')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none">
+                      <i id="icon-toggle-old-pass" class="fa-solid fa-eye text-sm"></i>
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-slate-600 mb-1">Password Baru</label>
-                  <input type="password" id="pass-new" autocomplete="new-password" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                  <div class="relative">
+                    <input type="password" id="pass-new" autocomplete="new-password" required class="w-full pl-3.5 pr-10 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    <button type="button" onclick="togglePasswordVisibility('pass-new', 'icon-toggle-new-pass')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none">
+                      <i id="icon-toggle-new-pass" class="fa-solid fa-eye text-sm"></i>
+                    </button>
+                  </div>
+                  <p class="text-[11px] text-slate-400 mt-1">Gunakan minimal 6 karakter unik untuk menghindari peringatan kebocoran browser.</p>
                 </div>
                 <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold transition">
                   Simpan Password Baru
@@ -688,7 +702,12 @@
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Password <span id="usr-pass-help" class="font-normal text-slate-400">(Isi jika ingin ubah)</span></label>
-          <input type="password" id="usr-password" autocomplete="new-password" class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
+          <div class="relative">
+            <input type="password" id="usr-password" autocomplete="new-password" class="w-full pl-3.5 pr-10 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
+            <button type="button" onclick="togglePasswordVisibility('usr-password', 'icon-toggle-usr-pass')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none">
+              <i id="icon-toggle-usr-pass" class="fa-solid fa-eye text-sm"></i>
+            </button>
+          </div>
         </div>
         <div class="pt-4 flex justify-end space-x-3 border-t border-slate-100">
           <button type="button" onclick="closeModal('modal-user')" class="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl">Batal</button>
@@ -800,6 +819,39 @@
       initApp();
       setupEventListeners();
     });
+
+    /**
+     * Helper Toggle Password Visibility (Eye Icon)
+     */
+    function togglePasswordVisibility(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (!input) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) {
+          icon.classList.remove('fa-eye');
+          icon.classList.add('fa-eye-slash');
+        }
+      } else {
+        input.type = 'password';
+        if (icon) {
+          icon.classList.remove('fa-eye-slash');
+          icon.classList.add('fa-eye');
+        }
+      }
+    }
+
+    const WEAK_PASSWORDS = ["123456", "admin123", "password", "user123", "12345678", "admin", "123456789", "pass123", "qwerty"];
+    function validatePasswordClient(pass) {
+      if (!pass || pass.trim().length < 6) {
+        return "Password minimal harus 6 karakter!";
+      }
+      if (WEAK_PASSWORDS.includes(pass.trim().toLowerCase())) {
+        return "Password '" + pass + "' terlalu umum dan terdeteksi berisiko bocor oleh browser! Gunakan kombinasi password unik seperti Admin#SimData2026!.";
+      }
+      return null;
+    }
 
     /**
      * Format Tanggal & Waktu Bahasa Indonesia
@@ -1247,6 +1299,9 @@
           AppState.token = res.token;
           localStorage.setItem('simdata_token', res.token);
           await initApp();
+          if (res.notice) {
+            showCustomAlert("Informasi Keamanan Password", res.notice);
+          }
         } catch (err) {
           // Handled in callBackend
         }
@@ -1350,6 +1405,12 @@
           const oldPass = document.getElementById('pass-old').value;
           const newPass = document.getElementById('pass-new').value;
 
+          const weakErr = validatePasswordClient(newPass);
+          if (weakErr) {
+            showCustomAlert("Keamanan Password", weakErr);
+            return;
+          }
+
           try {
             await callBackend('changePassword', { token: AppState.token, oldPass: oldPass, newPass: newPass });
             showCustomAlert("Sukses", "Password Anda berhasil diperbarui!");
@@ -1381,6 +1442,15 @@
       if (formUsr) {
         formUsr.addEventListener('submit', async (e) => {
           e.preventDefault();
+          const passVal = document.getElementById('usr-password').value;
+          if (passVal && passVal.trim() !== "") {
+            const weakErr = validatePasswordClient(passVal);
+            if (weakErr) {
+              showCustomAlert("Keamanan Password", weakErr);
+              return;
+            }
+          }
+
           const userData = {
             id: document.getElementById('usr-id').value,
             username: document.getElementById('usr-username').value,
@@ -1388,7 +1458,7 @@
             instansi: document.getElementById('usr-instansi').value,
             role: document.getElementById('usr-role').value || "User",
             status: document.getElementById('usr-status').value,
-            password: document.getElementById('usr-password').value
+            password: passVal
           };
 
           try {
