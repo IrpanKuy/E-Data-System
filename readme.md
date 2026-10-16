@@ -63,10 +63,51 @@ _Fungsi:_ Pusat informasi visual yang menyajikan ringkasan status pengumpulan da
       Menggunakan fitur Monitoring untuk memantau progres pengumpulan data dari seluruh instansi tanpa terkecuali.
       Mengatur jadwal dan mengirimkan Reminder terkait batas waktu pengumpulan data.
 2. User / Instansi (Akses Terbatas)
-      User merupakan perwakilan dari masing-masing instansi yang bertugas menyetorkan data. Tugas dan hak akses user meliputi:
-      Melihat informasi umum melalui Dashboard Interaktif.
-      Mengunduh dan melihat Master Data atau template permintaan data yang disediakan oleh admin.
-      Mengisi dan mengirimkan data melalui Formulir Pengumpulan Data untuk instansi mereka sendiri.
-      Memantau status Verifikasi Data milik instansi mereka (apakah sedang diproses, disetujui, atau ditolak).
-      Menggunakan fitur Monitoring yang cakupannya terbatas untuk memantau progres instansinya sendiri.
-      Menerima informasi dan Reminder terkait jadwal mulai serta deadline pengumpulan data.
+   User merupakan perwakilan dari masing-masing instansi yang bertugas menyetorkan data. Tugas dan hak akses user meliputi:
+   Melihat informasi umum melalui Dashboard Interaktif.
+   Mengunduh dan melihat Master Data atau template permintaan data yang disediakan oleh admin.
+   Mengisi dan mengirimkan data melalui Formulir Pengumpulan Data untuk instansi mereka sendiri.
+   Memantau status Verifikasi Data milik instansi mereka (apakah sedang diproses, disetujui, atau ditolak).
+   Menggunakan fitur Monitoring yang cakupannya terbatas untuk memantau progres instansinya sendiri.
+   Menerima informasi dan Reminder terkait jadwal mulai serta deadline pengumpulan data.
+
+---
+
+🔑 Informasi Akun Pengguna (Data Seed Otomatis)
+
+Semua akun otomatis dibuat saat fungsi `setupDatabase()` dijalankan di Google Apps Script:
+
+### 1. Akun Administrator
+- **Username:** `admin`
+- **Password:** `password123`
+- **Role:** `Admin` (Akses Penuh Seluruh Menu & Verifikasi)
+
+### 2. Akun User Instansi (Password Default: `password123`)
+| No | Username | Nama Petugas / PIC | Instansi Terkait |
+|:---|:---|:---|:---|
+| 1 | `user_kesehatan` | Dr. Budi Santoso | Dinas Kesehatan |
+| 2 | `user_pendidikan` | Siti Rahayu, M.Pd | Dinas Pendidikan & Kebudayaan |
+| 3 | `user_dishub` | Ahmad Hidayat, S.T | Dinas Perhubungan |
+| 4 | `user_pupr` | Ir. Eko Prabowo | Dinas Pekerjaan Umum & PR |
+| 5 | `user_bappeda` | Dewi Wulandari, S.E | Bappeda Daerah |
+| 6 | `user_kominfo` | Rina Suryani, S.Kom | Diskominfo & Persandian |
+| 7 | `user_inspektorat` | Agus Kurniawan, S.H | Inspektorat Daerah |
+| 8 | `user_dinsos` | Sri Astuti, S.Sos | Dinas Sosial & PMD |
+| 9 | `user_dlh` | Hendra Saputra, S.Si | Dinas Lingkungan Hidup |
+| 10 | `user_satpolpp` | Rudi Hermawan, S.STP | Satuan Polisi Pamong Praja |
+| 11 | `user_dukcapil` | Maya Lestari, S.AP | Dinas Dukcapil |
+| 12 | `user_pertanian` | Dedi Setiawan, S.P | Dinas Pertanian & Ketenagakerjaan |
+| 13 | `user_disperindag` | Titin Nuryani, S.E | Dinas Perindustrian & Perdagangan |
+| 14 | `user_dpmptsp` | Heri Purnomo, S.H | Dinas Penanaman Modal & PTSP |
+| 15 | `user_dispora` | Nining Mardiana, S.Pd | Dinas Pemuda & Olahraga |
+
+---
+
+📊 Data Pengkondisian Seeder Otomatis (`setupDatabase`):
+1. **Instansi**: 15 instansi daerah lengkap dengan link drive template masing-masing.
+2. **Master Templates**: Ragam template untuk target `ALL` maupun khusus instansi tertentu (Dinas Kesehatan, Sosial, PUPR, Dishub, DLH, dsb.).
+3. **Pengajuan Data (Submissions)**: 7 data riwayat pengajuan dengan berbagai status:
+   - `Disetujui` (Lengkap dengan catatan verifikasi valid).
+   - `Proses Verifikasi` (Menunggu tindakan verifikasi admin).
+   - `Ditolak` (Lengkap dengan catatan perbaikan/revisi).
+4. **Pengumuman & Pengingat**: Pengingat aktif dengan tautan surat Google Drive, pengingat khusus dinas, dan pengingat arsip.

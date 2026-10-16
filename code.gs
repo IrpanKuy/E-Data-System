@@ -3,6 +3,7 @@
 // ==============================================================================
 const SHEETS = {
   USERS: "Users",
+  INSTANSI: "Instansi",
   TEMPLATES: "MasterTemplates",
   SUBMISSIONS: "DataSubmissions",
   REMINDERS: "Reminders",
@@ -42,6 +43,12 @@ function doPost(e) {
         break;
       case "deleteUser":
         result = deleteUser(payload.token, payload.userId);
+        break;
+      case "saveInstansi":
+        result = saveInstansi(payload.token, payload.instansiData);
+        break;
+      case "deleteInstansi":
+        result = deleteInstansi(payload.token, payload.instansiId);
         break;
       case "saveMasterTemplate":
         result = saveMasterTemplate(payload.token, payload.tplData);
@@ -102,8 +109,34 @@ function doPost(e) {
 function setupDatabase() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
+
+
+
+  const defaultDriveTemplate = "https://drive.google.com/drive/folders/1goO7fDcAegX3m944nNr5iVxfN_AuyW-I";
+  const defaultDriveUpload = "https://drive.google.com/drive/folders/1z0CtFO_7oNgiYpKvAjo_Vd3P00d9IpuW";
+
+  const defaultInstansiList = [
+    { nama: "Dinas Kesehatan", user: "user_kesehatan", pic: "Dr. Budi Santoso", jabatan: "Kepala Subbag Program" },
+    { nama: "Dinas Pendidikan & Kebudayaan", user: "user_pendidikan", pic: "Siti Rahayu, M.Pd", jabatan: "Analis Kebijakan Ahli Muda" },
+    { nama: "Dinas Perhubungan", user: "user_dishub", pic: "Ahmad Hidayat, S.T", jabatan: "Kasi Sarana & Prasarana" },
+    { nama: "Dinas Pekerjaan Umum & PR", user: "user_pupr", pic: "Ir. Eko Prabowo", jabatan: "Kepala Bidang Cipta Karya" },
+    { nama: "Bappeda Daerah", user: "user_bappeda", pic: "Dewi Wulandari, S.E", jabatan: "Fungsional Perencana Ahli Madya" },
+    { nama: "Diskominfo & Persandian", user: "user_kominfo", pic: "Rina Suryani, S.Kom", jabatan: "Pranata Komputer Ahli Muda" },
+    { nama: "Inspektorat Daerah", user: "user_inspektorat", pic: "Agus Kurniawan, S.H", jabatan: "Auditor Ahli Muda" },
+    { nama: "Dinas Sosial & PMD", user: "user_dinsos", pic: "Sri Astuti, S.Sos", jabatan: "Pengelola Program Bantuan" },
+    { nama: "Dinas Lingkungan Hidup", user: "user_dlh", pic: "Hendra Saputra, S.Si", jabatan: "Pengendali Dampak Lingkungan" },
+    { nama: "Satuan Polisi Pamong Praja", user: "user_satpolpp", pic: "Rudi Hermawan, S.STP", jabatan: "Kasi Penegakan Perda" },
+    { nama: "Dinas Dukcapil", user: "user_dukcapil", pic: "Maya Lestari, S.AP", jabatan: "Administrator Data Kependudukan" },
+    { nama: "Dinas Pertanian & Ketenagakerjaan", user: "user_pertanian", pic: "Dedi Setiawan, S.P", jabatan: "Penyuluh Pertanian Madya" },
+    { nama: "Dinas Perindustrian & Perdagangan", user: "user_disperindag", pic: "Titin Nuryani, S.E", jabatan: "Analis Perdagangan" },
+    { nama: "Dinas Penanaman Modal & PTSP", user: "user_dpmptsp", pic: "Heri Purnomo, S.H", jabatan: "Penata Perizinan Ahli Pertama" },
+    { nama: "Dinas Pemuda & Olahraga", user: "user_dispora", pic: "Nining Mardiana, S.Pd", jabatan: "Pengelola Sarana Olahraga" }
+  ];
+
   // 1. Sheet Users
   let sheetUsers = ss.getSheetByName(SHEETS.USERS);
+  const commonPassHash = hashPassword("password123");
+
   if (!sheetUsers) {
     sheetUsers = ss.insertSheet(SHEETS.USERS);
     sheetUsers.appendRow([
@@ -116,21 +149,58 @@ function setupDatabase() {
       "status",
       "created_at",
     ]);
-    // Seed Default Admin (Pass: admin123 -> SHA-256)
-    const adminPassHash = hashPassword("admin123");
+  }
+
+  // Jika tabel users kosong / hanya ada header, buat akun Admin & Akun User untuk tiap instansi
+  if (sheetUsers.getLastRow() <= 1) {
     sheetUsers.appendRow([
       "USR-1000",
       "admin",
-      adminPassHash,
+      commonPassHash,
       "Administrator Pusat",
       "Dinas Pusat",
       "Admin",
       "Aktif",
       new Date().toISOString(),
     ]);
+
+    defaultInstansiList.forEach((ins, idx) => {
+      sheetUsers.appendRow([
+        "USR-" + (2001 + idx),
+        ins.user,
+        commonPassHash,
+        ins.pic,
+        ins.nama,
+        "User",
+        "Aktif",
+        new Date(Date.now() - (idx * 86400000)).toISOString(),
+      ]);
+    });
   }
 
-  // 2. Sheet MasterTemplates
+  // 2. Sheet Instansi (Master Data Instansi & Drive Template - Tanpa Keterangan)
+  let sheetInstansi = ss.getSheetByName(SHEETS.INSTANSI);
+  if (!sheetInstansi) {
+    sheetInstansi = ss.insertSheet(SHEETS.INSTANSI);
+    sheetInstansi.appendRow([
+      "id",
+      "nama_instansi",
+      "link_drive_template",
+      "created_at",
+    ]);
+  }
+  if (sheetInstansi.getLastRow() <= 1) {
+    defaultInstansiList.forEach((ins, idx) => {
+      sheetInstansi.appendRow([
+        "INS-" + (1001 + idx),
+        ins.nama,
+        defaultDriveTemplate,
+        new Date().toISOString(),
+      ]);
+    });
+  }
+
+  // 3. Sheet MasterTemplates
   let sheetTemplates = ss.getSheetByName(SHEETS.TEMPLATES);
   if (!sheetTemplates) {
     sheetTemplates = ss.insertSheet(SHEETS.TEMPLATES);
@@ -140,20 +210,71 @@ function setupDatabase() {
       "tahun",
       "deskripsi",
       "link_drive",
+      "target_instansi",
       "created_at",
     ]);
-    // Seed contoh template
-    sheetTemplates.appendRow([
-      "TPL-1001",
-      "Format Laporan Capaian Kinerja (LAKIP)",
-      "2026",
-      "Panduan dan format Excel pengisian data LAKIP Tahunan",
-      "https://drive.google.com",
-      new Date().toISOString(),
-    ]);
+  } else {
+    // Migration: pastikan kolom target_instansi ada
+    const tplHeaders = sheetTemplates.getRange(1, 1, 1, Math.max(sheetTemplates.getLastColumn(), 1)).getValues()[0];
+    if (tplHeaders.indexOf("target_instansi") === -1) {
+      sheetTemplates.getRange(1, sheetTemplates.getLastColumn() + 1).setValue("target_instansi");
+    }
   }
 
-  // 3. Sheet DataSubmissions
+  // Seed ragam template jika masih kosong
+  if (sheetTemplates.getLastRow() <= 1) {
+    const seedTemplates = [
+      [
+        "TPL-1001",
+        "Format Laporan Capaian Kinerja (LAKIP) Tahunan",
+        "2026",
+        "Panduan baku dan format Excel pengisian data LAKIP Tahunan seluruh instansi.",
+        defaultDriveTemplate,
+        "ALL",
+        new Date().toISOString(),
+      ],
+      [
+        "TPL-1002",
+        "Instrumen Standar Pelayanan Minimal (SPM) Kesehatan & Sosial",
+        "2026",
+        "Formulir evaluasi indikator SPM bidang kesehatan masyarakat dan penanganan PMD.",
+        defaultDriveTemplate,
+        "Dinas Kesehatan, Dinas Sosial & PMD",
+        new Date().toISOString(),
+      ],
+      [
+        "TPL-1003",
+        "Laporan Realisasi Fisik & Anggaran Infrastruktur Daerah",
+        "2026",
+        "Format monitoring penyerapan anggaran belanja modal dan kegiatan fisik.",
+        defaultDriveTemplate,
+        "Dinas Pekerjaan Umum & PR, Dinas Perhubungan, Dinas Lingkungan Hidup",
+        new Date().toISOString(),
+      ],
+      [
+        "TPL-1004",
+        "Form Data Statistik Sektoral Pendidikan & Ketenagakerjaan",
+        "2026",
+        "Format pendataan rasio sarana pendidikan, tenaga pendidik, dan serapan tenaga kerja.",
+        defaultDriveTemplate,
+        "Dinas Pendidikan & Kebudayaan, Dinas Pertanian & Ketenagakerjaan, Bappeda Daerah",
+        new Date().toISOString(),
+      ],
+      [
+        "TPL-1005",
+        "Matriks Kepatuhan Tata Kelola & Akuntabilitas Publik",
+        "2025",
+        "Instrumen kepatuhan reformasi birokrasi, penegakan perda, dan pengawasan internal.",
+        defaultDriveTemplate,
+        "Inspektorat Daerah, Diskominfo & Persandian, Satuan Polisi Pamong Praja, Dinas Dukcapil",
+        new Date().toISOString(),
+      ]
+    ];
+
+    sheetTemplates.getRange(sheetTemplates.getLastRow() + 1, 1, seedTemplates.length, seedTemplates[0].length).setValues(seedTemplates);
+  }
+
+  // 4. Sheet DataSubmissions (Ragam Status: Disetujui, Ditolak, Proses Verifikasi)
   let sheetSubmissions = ss.getSheetByName(SHEETS.SUBMISSIONS);
   if (!sheetSubmissions) {
     sheetSubmissions = ss.insertSheet(SHEETS.SUBMISSIONS);
@@ -173,7 +294,112 @@ function setupDatabase() {
     ]);
   }
 
-  // 4. Sheet Reminders
+  if (sheetSubmissions.getLastRow() <= 1) {
+    const seedSubmissions = [
+      [
+        "SUB-10001",
+        "USR-2001",
+        "Dinas Kesehatan",
+        "Dr. Budi Santoso",
+        "Kepala Subbag Program",
+        2026,
+        "Laporan Capaian Kinerja (LAKIP) Triwulan I",
+        defaultDriveUpload,
+        "Disetujui",
+        "Data sangat lengkap, seluruh matriks indikator telah terisi valid.",
+        new Date(Date.now() - 5 * 86400000).toISOString(),
+        new Date(Date.now() - 3 * 86400000).toISOString(),
+      ],
+      [
+        "SUB-10002",
+        "USR-2002",
+        "Dinas Pendidikan & Kebudayaan",
+        "Siti Rahayu, M.Pd",
+        "Analis Kebijakan Ahli Muda",
+        2026,
+        "Laporan Realisasi Fisik & Keuangan Triwulan I",
+        defaultDriveUpload,
+        "Proses Verifikasi",
+        "",
+        new Date(Date.now() - 2 * 86400000).toISOString(),
+        "",
+      ],
+      [
+        "SUB-10003",
+        "USR-2003",
+        "Dinas Perhubungan",
+        "Ahmad Hidayat, S.T",
+        "Kasi Sarana & Prasarana",
+        2026,
+        "Data Kepatuhan Standar Pelayanan Minimal (SPM)",
+        defaultDriveUpload,
+        "Ditolak",
+        "Lampiran file Excel bukti pendukung belum dapat diakses (akses drive privat). Mohon bagikan akses publik atau kirim ulang.",
+        new Date(Date.now() - 6 * 86400000).toISOString(),
+        new Date(Date.now() - 4 * 86400000).toISOString(),
+      ],
+      [
+        "SUB-10004",
+        "USR-2004",
+        "Dinas Pekerjaan Umum & PR",
+        "Ir. Eko Prabowo",
+        "Kepala Bidang Cipta Karya",
+        2026,
+        "Laporan Realisasi Fisik & Anggaran Infrastruktur Daerah",
+        defaultDriveUpload,
+        "Disetujui",
+        "Data progres fisik dan keuangan telah diverifikasi sesuai.",
+        new Date(Date.now() - 7 * 86400000).toISOString(),
+        new Date(Date.now() - 5 * 86400000).toISOString(),
+      ],
+      [
+        "SUB-10005",
+        "USR-2005",
+        "Bappeda Daerah",
+        "Dewi Wulandari, S.E",
+        "Fungsional Perencana Ahli Madya",
+        2026,
+        "Dokumen Rencana Kerja Anggaran (RKA)",
+        defaultDriveUpload,
+        "Proses Verifikasi",
+        "",
+        new Date(Date.now() - 1 * 86400000).toISOString(),
+        "",
+      ],
+      [
+        "SUB-10006",
+        "USR-2006",
+        "Diskominfo & Persandian",
+        "Rina Suryani, S.Kom",
+        "Pranata Komputer Ahli Muda",
+        2026,
+        "Data Statistik Sektoral Daerah Triwulan I",
+        defaultDriveUpload,
+        "Disetujui",
+        "Valid dan sinkron dengan portal satu data.",
+        new Date(Date.now() - 8 * 86400000).toISOString(),
+        new Date(Date.now() - 6 * 86400000).toISOString(),
+      ],
+      [
+        "SUB-10007",
+        "USR-2009",
+        "Dinas Lingkungan Hidup",
+        "Hendra Saputra, S.Si",
+        "Pengendali Dampak Lingkungan",
+        2025,
+        "Data Statistik Sektoral Pengelolaan Sampah",
+        defaultDriveUpload,
+        "Ditolak",
+        "Tabel rekapitulasi timbulan sampah bulan Desember belum dimasukkan.",
+        new Date(Date.now() - 10 * 86400000).toISOString(),
+        new Date(Date.now() - 8 * 86400000).toISOString(),
+      ]
+    ];
+
+    sheetSubmissions.getRange(sheetSubmissions.getLastRow() + 1, 1, seedSubmissions.length, seedSubmissions[0].length).setValues(seedSubmissions);
+  }
+
+  // 5. Sheet Reminders (Dengan Tautan Surat, Tanggal Mulai, dan Deadline Beragam)
   let sheetReminders = ss.getSheetByName(SHEETS.REMINDERS);
   if (!sheetReminders) {
     sheetReminders = ss.insertSheet(SHEETS.REMINDERS);
@@ -181,36 +407,74 @@ function setupDatabase() {
       "id",
       "judul",
       "pesan",
+      "tautan_surat",
       "tanggal_mulai",
       "deadline",
       "status",
       "created_at",
     ]);
-    // Seed contoh pengingat
-    const today = new Date();
-    const nextWeek = new Date();
-    nextWeek.setDate(today.getDate() + 14);
-    sheetReminders.appendRow([
-      "RMD-1001",
-      "Pengumpulan Data Triwulan I",
-      "Diharapkan seluruh instansi melengkapi data indikator kinerja sebelum tenggat waktu.",
-      today.toISOString().split("T")[0],
-      nextWeek.toISOString().split("T")[0],
-      "Aktif",
-      new Date().toISOString(),
-    ]);
+  } else {
+    // Migration: pastikan kolom tautan_surat ada
+    const remHeaders = sheetReminders.getRange(1, 1, 1, Math.max(sheetReminders.getLastColumn(), 1)).getValues()[0];
+    if (remHeaders.indexOf("tautan_surat") === -1) {
+      sheetReminders.getRange(1, sheetReminders.getLastColumn() + 1).setValue("tautan_surat");
+    }
   }
 
-  // 5. Sheet AppSettings
+  if (sheetReminders.getLastRow() <= 1) {
+    const today = new Date();
+    const next14Days = new Date(today.getTime() + 14 * 86400000);
+    const past30Days = new Date(today.getTime() - 30 * 86400000);
+    const past5Days = new Date(today.getTime() - 5 * 86400000);
+
+    const seedReminders = [
+      [
+        "RMD-1001",
+        "Batas Akhir Penyetoran Laporan Capaian Kinerja (LAKIP) Triwulan I",
+        "Diberitahukan kepada seluruh Perangkat Daerah agar segera menyerahkan berkas laporan kinerja sebelum batas akhir. Mohon koordinasikan dengan Subbag Program masing-masing.",
+        "https://drive.google.com/drive/folders/1goO7fDcAegX3m944nNr5iVxfN_AuyW-I",
+        today.toISOString().split("T")[0],
+        next14Days.toISOString().split("T")[0],
+        "Aktif",
+        new Date().toISOString(),
+      ],
+      [
+        "RMD-1002",
+        "Pengisian Instrumen Standar Pelayanan Minimal (SPM) 2026",
+        "Khusus Dinas Kesehatan dan Dinas Sosial, mohon mengunggah matriks rekapitulasi pelayanan triwulanan sesuai surat edaran Sekda.",
+        "https://drive.google.com/drive/folders/1goO7fDcAegX3m944nNr5iVxfN_AuyW-I",
+        today.toISOString().split("T")[0],
+        new Date(today.getTime() + 21 * 86400000).toISOString().split("T")[0],
+        "Aktif",
+        new Date().toISOString(),
+      ],
+      [
+        "RMD-1003",
+        "Penyetoran Laporan Realisasi Fisik & Anggaran Akhir Tahun",
+        "Seluruh rangkaian pengumpulan dokumen tahun anggaran sebelumnya telah rampung diverifikasi.",
+        "",
+        past30Days.toISOString().split("T")[0],
+        past5Days.toISOString().split("T")[0],
+        "Selesai",
+        past30Days.toISOString(),
+      ]
+    ];
+
+    sheetReminders.getRange(sheetReminders.getLastRow() + 1, 1, seedReminders.length, seedReminders[0].length).setValues(seedReminders);
+  }
+
+  // 6. Sheet AppSettings
   let sheetSettings = ss.getSheetByName(SHEETS.SETTINGS);
   if (!sheetSettings) {
     sheetSettings = ss.insertSheet(SHEETS.SETTINGS);
     sheetSettings.appendRow(["key", "value"]);
+  }
+  if (sheetSettings.getLastRow() <= 1) {
     sheetSettings.appendRow(["app_name", "SIM-DATA INSTANSI"]);
     sheetSettings.appendRow(["app_org", "Pemerintah Daerah"]);
   }
 
-  return "Setup Database & Seeder Berhasil Diinisialisasi!";
+  return "Setup Database & Seeder Lengkap Berhasil Diinisialisasi!";
 }
 
 // ==============================================================================
@@ -391,14 +655,115 @@ function getInitialData(token) {
     });
   }
 
+  // Load Instansi Data
+  let allInstansi = getSheetData(SHEETS.INSTANSI);
+  if (!allInstansi || allInstansi.length === 0) {
+    setupDatabase();
+    allInstansi = getSheetData(SHEETS.INSTANSI);
+  }
+
+  // Filter Templates for non-admin: hanya tampilkan jika template dichecklist untuk instansi terkait user
+  let returnedTemplates = allTemplates;
+  if (currentUser.role !== "Admin") {
+    returnedTemplates = allTemplates.filter((t) => {
+      if (!t.target_instansi || t.target_instansi.trim() === "" || t.target_instansi === "ALL") {
+        return true;
+      }
+      const list = t.target_instansi.split(",").map((s) => s.trim().toLowerCase());
+      return list.includes((currentUser.instansi || "").trim().toLowerCase());
+    });
+  }
+
   return {
     user: safeUser,
     submissions: userSubmissions,
-    templates: allTemplates,
+    templates: returnedTemplates,
     reminders: allReminders,
     settings: appSettings,
     users: usersList,
+    instansi: allInstansi,
   };
+}
+
+// ==============================================================================
+// CRUD OPERATIONS: INSTANSI
+// ==============================================================================
+
+function saveInstansi(token, instansiData) {
+  const adminUser = verifySessionToken(token);
+  if (adminUser.role !== "Admin")
+    throw new Error("Akses ditolak. Khusus Admin.");
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(SHEETS.INSTANSI);
+  if (!sheet) {
+    setupDatabase();
+    sheet = ss.getSheetByName(SHEETS.INSTANSI);
+  }
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+
+  let isUpdate = false;
+  let rowIndex = -1;
+
+  if (instansiData.id) {
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0]) === String(instansiData.id)) {
+        isUpdate = true;
+        rowIndex = i + 1;
+        break;
+      }
+    }
+  }
+
+  // Cek duplikasi nama instansi
+  const nameColIdx = headers.indexOf("nama_instansi");
+  const targetName = (instansiData.nama_instansi || "").trim().toLowerCase();
+  for (let i = 1; i < data.length; i++) {
+    if (isUpdate && i + 1 === rowIndex) continue;
+    if (String(data[i][nameColIdx]).trim().toLowerCase() === targetName) {
+      throw new Error("Nama instansi '" + instansiData.nama_instansi + "' sudah terdaftar!");
+    }
+  }
+
+  if (isUpdate) {
+    headers.forEach((h, colIdx) => {
+      if (h !== "id" && h !== "created_at" && instansiData[h] !== undefined) {
+        sheet.getRange(rowIndex, colIdx + 1).setValue(instansiData[h]);
+      }
+    });
+  } else {
+    const newId = "INS-" + Math.floor(1000 + Math.random() * 9000);
+    const newRow = [];
+    headers.forEach((h) => {
+      if (h === "id") newRow.push(newId);
+      else if (h === "nama_instansi") newRow.push(instansiData.nama_instansi.trim());
+      else if (h === "link_drive_template") newRow.push(instansiData.link_drive_template || "https://drive.google.com");
+      else if (h === "created_at") newRow.push(new Date().toISOString());
+      else newRow.push(instansiData[h] || "");
+    });
+    sheet.appendRow(newRow);
+  }
+
+  return "Data instansi berhasil disimpan!";
+}
+
+function deleteInstansi(token, instansiId) {
+  const adminUser = verifySessionToken(token);
+  if (adminUser.role !== "Admin") throw new Error("Akses ditolak.");
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.INSTANSI);
+  if (!sheet) throw new Error("Tabel instansi tidak ditemukan.");
+  const data = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === String(instansiId)) {
+      sheet.deleteRow(i + 1);
+      return "Data instansi berhasil dihapus!";
+    }
+  }
+  throw new Error("Data instansi tidak ditemukan.");
 }
 
 // ==============================================================================
@@ -510,6 +875,12 @@ function saveMasterTemplate(token, tplData) {
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
 
+  // Migration: pastikan target_instansi ada di header
+  if (headers.indexOf("target_instansi") === -1) {
+    sheet.getRange(1, sheet.getLastColumn() + 1).setValue("target_instansi");
+    headers.push("target_instansi");
+  }
+
   let isUpdate = false;
   let rowIndex = -1;
 
@@ -531,14 +902,17 @@ function saveMasterTemplate(token, tplData) {
     });
   } else {
     const newId = "TPL-" + Math.floor(1000 + Math.random() * 9000);
-    const newRow = [
-      newId,
-      tplData.nama_template,
-      tplData.tahun,
-      tplData.deskripsi,
-      tplData.link_drive,
-      new Date().toISOString(),
-    ];
+    const newRow = [];
+    headers.forEach((h) => {
+      if (h === "id") newRow.push(newId);
+      else if (h === "nama_template") newRow.push(tplData.nama_template);
+      else if (h === "tahun") newRow.push(tplData.tahun);
+      else if (h === "deskripsi") newRow.push(tplData.deskripsi || "");
+      else if (h === "link_drive") newRow.push(tplData.link_drive || "");
+      else if (h === "target_instansi") newRow.push(tplData.target_instansi || "");
+      else if (h === "created_at") newRow.push(new Date().toISOString());
+      else newRow.push(tplData[h] !== undefined ? tplData[h] : "");
+    });
     sheet.appendRow(newRow);
   }
 
@@ -694,6 +1068,12 @@ function saveReminder(token, remData) {
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
 
+  // Migration: pastikan tautan_surat ada di header
+  if (headers.indexOf("tautan_surat") === -1) {
+    sheet.getRange(1, sheet.getLastColumn() + 1).setValue("tautan_surat");
+    headers.push("tautan_surat");
+  }
+
   let isUpdate = false;
   let rowIndex = -1;
 
@@ -715,15 +1095,18 @@ function saveReminder(token, remData) {
     });
   } else {
     const newId = "RMD-" + Math.floor(1000 + Math.random() * 9000);
-    const newRow = [
-      newId,
-      remData.judul,
-      remData.pesan,
-      remData.tanggal_mulai,
-      remData.deadline,
-      remData.status || "Aktif",
-      new Date().toISOString(),
-    ];
+    const newRow = [];
+    headers.forEach((h) => {
+      if (h === "id") newRow.push(newId);
+      else if (h === "judul") newRow.push(remData.judul);
+      else if (h === "pesan") newRow.push(remData.pesan);
+      else if (h === "tautan_surat") newRow.push(remData.tautan_surat || "");
+      else if (h === "tanggal_mulai") newRow.push(remData.tanggal_mulai || "");
+      else if (h === "deadline") newRow.push(remData.deadline || "");
+      else if (h === "status") newRow.push(remData.status || "Aktif");
+      else if (h === "created_at") newRow.push(new Date().toISOString());
+      else newRow.push(remData[h] !== undefined ? remData[h] : "");
+    });
     sheet.appendRow(newRow);
   }
 
@@ -878,7 +1261,7 @@ function generateSeed(token = null, count = 50) {
   // 1. Seed Users (Bila belum ada/perlu pengguna tambahan)
   const sheetUsers = ss.getSheetByName(SHEETS.USERS);
   const userRows = [];
-  const defaultPassHash = hashPassword("SimData#2026!");
+  const defaultPassHash = hashPassword("password123");
 
   for (let i = 0; i < instansiList.length; i++) {
     const instansi = instansiList[i];

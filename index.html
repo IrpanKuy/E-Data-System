@@ -17,6 +17,37 @@
     body { font-family: 'Inter', sans-serif; }
     .sidebar-transition { transition: transform 0.3s ease-in-out; }
     .glass-effect { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+
+    /* Fixed Sidebar Layout - Requirement 1 */
+    #sidebar {
+      position: fixed !important;
+      top: 0 !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      height: 100vh !important;
+      max-height: 100vh !important;
+      width: 16rem !important; /* 256px */
+      z-index: 40 !important;
+      overflow: hidden !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+    @media (min-width: 768px) {
+      #sidebar {
+        transform: translateX(0) !important;
+      }
+    }
+    #sidebar nav {
+      flex: 1 1 0% !important;
+      overflow-y: auto !important;
+    }
+    #sidebar nav::-webkit-scrollbar {
+      width: 4px;
+    }
+    #sidebar nav::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen">
@@ -28,7 +59,7 @@
      ========================================================================== -->
   <script>
     /* HYBRID DEPLOYMENT URL SETUP */
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyWchlP1E-QfS8ACohTV0Qh_LdRuN9xavZkCG-9493tuyFvXlylaA93W-9mmRmI38bV/exec"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxZEsnfiLVs3i3CoIF5IR18g2aU7To1GuPKoz2FviPctvZGV9EVzAUPlBuB1Z9EmWvdLA/exec"; 
   </script>
 
   <!-- GLOBAL LOADING OVERLAY -->
@@ -67,21 +98,22 @@
       <div class="absolute -top-12 -right-12 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl"></div>
       
       <div class="text-center mb-8">
-        <div class="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg shadow-indigo-300 mx-auto mb-4">
-          <i class="fa-solid fa-cubes-stacked"></i>
+        <div class="w-20 h-20 bg-white rounded-2xl flex items-center justify-center shadow-lg p-2.5 mx-auto mb-4 border border-slate-100">
+          <img src="ngada.png" alt="Logo Ngada" class="w-full h-full object-contain">
         </div>
         <h2 id="login-app-name" class="text-2xl font-bold text-slate-800 tracking-tight">SIM-DATA INSTANSI</h2>
         <p class="text-xs text-slate-500 mt-1">Sistem Pengumpulan & Pemantauan Data Terpadu</p>
       </div>
 
-      <form id="form-login" class="space-y-5" autocomplete="off">
+      <!-- Form Login (Didesain khusus anti-popup data breach Google Password Manager) -->
+      <div id="form-login" class="space-y-5">
         <div>
           <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Username</label>
           <div class="relative">
             <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
               <i class="fa-solid fa-user text-sm"></i>
             </span>
-            <input type="text" id="login-username" autocomplete="off" required placeholder="Masukkan username" class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-slate-50/50">
+            <input type="text" id="login-username" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" required placeholder="Masukkan username" class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-slate-50/50">
           </div>
         </div>
 
@@ -91,18 +123,18 @@
             <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
               <i class="fa-solid fa-lock text-sm"></i>
             </span>
-            <input type="password" id="login-password" autocomplete="current-password" required placeholder="••••••••" class="w-full pl-10 pr-10 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-slate-50/50">
-            <button type="button" onclick="togglePasswordVisibility('login-password', 'icon-toggle-login-pass')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none" title="Lihat/Sembunyikan Password">
+            <input type="text" id="login-password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" required placeholder="••••••••" style="-webkit-text-security: disc; text-security: disc;" class="w-full pl-10 pr-10 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-slate-50/50">
+            <button type="button" onclick="toggleCustomPasswordVisibility('login-password', 'icon-toggle-login-pass')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none" title="Lihat/Sembunyikan Password">
               <i id="icon-toggle-login-pass" class="fa-solid fa-eye text-sm"></i>
             </button>
           </div>
         </div>
 
-        <button type="submit" class="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-lg shadow-indigo-200 transition duration-200 flex items-center justify-center space-x-2 text-sm">
+        <button type="button" id="btn-submit-login" class="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-lg shadow-indigo-200 transition duration-200 flex items-center justify-center space-x-2 text-sm">
           <span>Masuk ke Sistem</span>
           <i class="fa-solid fa-arrow-right text-xs"></i>
         </button>
-      </form>
+      </div>
     </div>
   </div>
 
@@ -116,8 +148,9 @@
       <!-- Sidebar Header -->
       <div class="p-5 flex items-center justify-between border-b border-slate-800">
         <div class="flex items-center space-x-3">
-          <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md shadow-indigo-900">
-            <i class="fa-solid fa-cubes-stacked text-sm"></i>
+          <!-- Logo with dedicated white background (Requirement 2) -->
+          <div class="w-10 h-10 bg-white rounded-xl p-1.5 flex items-center justify-center shadow-md flex-shrink-0 border border-slate-700/50">
+            <img src="ngada.png" alt="Logo Ngada" class="w-full h-full object-contain">
           </div>
           <div>
             <h1 id="sidebar-app-name" class="font-bold text-white text-sm leading-tight">SIM-DATA</h1>
@@ -163,8 +196,14 @@
         </a>
 
         <div id="sidebar-settings-group" class="admin-only hidden pt-4 mt-4 border-t border-slate-800/80">
-          <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Pengaturan</p>
+          <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Pengaturan & Master</p>
           
+          <!-- Menu Kelola Instansi (Requirement 4) -->
+          <a href="#instansi" id="nav-instansi" data-target="sec-instansi" class="nav-item admin-only hidden flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+            <i class="fa-solid fa-building-columns w-5"></i>
+            <span>Kelola Instansi</span>
+          </a>
+
           <a href="#users" id="nav-users" data-target="sec-users" class="nav-item admin-only hidden flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
             <i class="fa-solid fa-users w-5"></i>
             <span>Kelola Pengguna</span>
@@ -322,7 +361,8 @@
               <i class="fa-solid fa-search absolute left-3 top-3 text-slate-400 text-xs"></i>
             </div>
             <div class="flex items-center space-x-2">
-              <a href="https://drive.google.com/drive/folders/1goO7fDcAegX3m944nNr5iVxfN_AuyW-I" target="_blank" class="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-sm font-semibold flex items-center justify-center space-x-2 transition border border-indigo-200 shadow-sm">
+              <!-- Tombol Drive Template Utama: Khusus User, diisi berdasarkan Drive Instansi (Requirement 5) -->
+              <a id="btn-user-drive-template" href="#" target="_blank" class="hidden px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-sm font-semibold flex items-center justify-center space-x-2 transition border border-indigo-200 shadow-sm">
                 <i class="fa-solid fa-folder-open"></i>
                 <span>Drive Template Utama</span>
               </a>
@@ -341,6 +381,7 @@
                     <th class="py-3.5 px-4">Nama Template</th>
                     <th class="py-3.5 px-4">Tahun</th>
                     <th class="py-3.5 px-4">Deskripsi / Juknis</th>
+                    <th id="th-tpl-target" class="py-3.5 px-4">Tampilkan Kepada</th>
                     <th class="py-3.5 px-4 text-center">Tautan</th>
                     <th class="py-3.5 px-4 text-right">Aksi</th>
                   </tr>
@@ -355,6 +396,46 @@
               <i class="fa-solid fa-folder-open text-4xl text-slate-300 mb-2"></i>
               <p class="text-sm font-semibold text-slate-600">Belum ada Master Template</p>
               <p class="text-xs text-slate-400 mt-0.5">Template format data akan ditampilkan di sini.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================================== -->
+        <!-- SECTION: KELOLA INSTANSI (ADMIN ONLY - REQUIREMENT 4) -->
+        <!-- ================================================================== -->
+        <section id="sec-instansi" class="content-section hidden space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200/80">
+            <div class="relative flex-1 max-w-md">
+              <input type="text" id="search-instansi" placeholder="Cari nama instansi atau keterangan..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <i class="fa-solid fa-search absolute left-3 top-3 text-slate-400 text-xs"></i>
+            </div>
+            <button onclick="openInstansiModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold flex items-center justify-center space-x-2 transition shadow-sm">
+              <i class="fa-solid fa-plus"></i>
+              <span>Tambah Instansi</span>
+            </button>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                    <th class="py-3.5 px-4">Nama Instansi</th>
+                    <th class="py-3.5 px-4">Drive Template Instansi</th>
+                    <th class="py-3.5 px-4 text-center">Tgl Dibuat</th>
+                    <th class="py-3.5 px-4 text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="tbl-instansi-body" class="divide-y divide-slate-100 text-sm">
+                  <!-- JS Dynamic Content -->
+                </tbody>
+              </table>
+            </div>
+            <!-- EMPTY STATE INSTANSI -->
+            <div id="empty-instansi" class="hidden p-8 text-center">
+              <i class="fa-solid fa-building-columns text-4xl text-slate-300 mb-2"></i>
+              <p class="text-sm font-semibold text-slate-600">Belum ada data Instansi</p>
+              <p class="text-xs text-slate-400 mt-0.5">Klik "Tambah Instansi" untuk menambahkan instansi baru.</p>
             </div>
           </div>
         </section>
@@ -561,7 +642,7 @@
                       <i id="icon-toggle-new-pass" class="fa-solid fa-eye text-sm"></i>
                     </button>
                   </div>
-                  <p class="text-[11px] text-slate-400 mt-1">Gunakan minimal 6 karakter unik untuk menghindari peringatan kebocoran browser.</p>
+                  <p class="text-[11px] text-slate-400 mt-1">Gunakan minimal 6 karakter untuk password akun Anda.</p>
                 </div>
                 <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold transition">
                   Simpan Password Baru
@@ -688,7 +769,10 @@
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Instansi / SKPD</label>
-          <input type="text" id="usr-instansi" required class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
+          <!-- Dynamic Select Instansi (Requirement 4) -->
+          <select id="usr-instansi" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 bg-white">
+            <option value="">-- Pilih Instansi --</option>
+          </select>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <input type="hidden" id="usr-role" value="User">
@@ -717,9 +801,9 @@
     </div>
   </div>
 
-  <!-- MODAL: MASTER TEMPLATE FORM (ADMIN ONLY) -->
+  <!-- MODAL: MASTER TEMPLATE FORM (ADMIN ONLY - REQUIREMENT 5) -->
   <div id="modal-template" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 border border-slate-100">
+    <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 border border-slate-100 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-100">
         <h3 id="modal-template-title" class="font-bold text-slate-800 text-base">Tambah Master Template</h3>
         <button onclick="closeModal('modal-template')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -742,9 +826,104 @@
           <label class="block text-xs font-semibold text-slate-600 mb-1">Link Google Drive Template</label>
           <input type="url" id="tpl-link" required placeholder="https://drive.google.com/drive/folders/1goO7fDcAegX3m944nNr5iVxfN_AuyW-I" class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
         </div>
+        <!-- Input Tampilkan Kepada (Checklist Instansi - Requirement 5) -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-xs font-semibold text-slate-600">Tampilkan Kepada Instansi</label>
+            <div class="space-x-1">
+              <button type="button" onclick="toggleAllTemplateChecklist(true)" class="text-[11px] text-indigo-600 hover:underline font-semibold">Pilih Semua</button>
+              <span class="text-slate-300">•</span>
+              <button type="button" onclick="toggleAllTemplateChecklist(false)" class="text-[11px] text-slate-400 hover:underline">Batal Semua</button>
+            </div>
+          </div>
+          <div id="tpl-target-checklist" class="max-h-44 overflow-y-auto p-3 border border-slate-200 rounded-xl bg-slate-50/50 space-y-2 text-xs">
+            <!-- Dynamically populated instansi checkboxes -->
+          </div>
+          <p class="text-[11px] text-slate-400 mt-1">Centang instansi yang berhak melihat dan mengunduh template ini.</p>
+        </div>
         <div class="pt-4 flex justify-end space-x-3 border-t border-slate-100">
           <button type="button" onclick="closeModal('modal-template')" class="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl">Batal</button>
           <button type="submit" class="px-5 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md">Simpan Template</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: KELOLA INSTANSI (ADMIN ONLY - REQUIREMENT 4 & 6) -->
+  <div id="modal-instansi" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 border border-slate-100 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-100">
+        <h3 id="modal-instansi-title" class="font-bold text-slate-800 text-base">Tambah Instansi</h3>
+        <button onclick="closeModal('modal-instansi')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <form id="form-instansi" class="space-y-3">
+        <input type="hidden" id="ins-id">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Instansi</label>
+          <input type="text" id="ins-nama" required placeholder="Cth: Dinas Kesehatan" class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Link Google Drive Template Instansi</label>
+          <input type="url" id="ins-drive-template" required placeholder="https://drive.google.com/drive/folders/..." class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
+          <p class="text-[11px] text-slate-400 mt-1">Link folder drive template khusus instansi ini (akan terhubung ke master template & user).</p>
+        </div>
+        <div class="pt-4 flex justify-end space-x-3 border-t border-slate-100">
+          <button type="button" onclick="closeModal('modal-instansi')" class="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl">Batal</button>
+          <button type="submit" class="px-5 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md">Simpan Instansi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: REMINDER FORM (ADMIN ONLY - REQUIREMENT 7 & 8 & 6) -->
+  <div id="modal-reminder" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 border border-slate-100 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-100">
+        <h3 id="modal-reminder-title" class="font-bold text-slate-800 text-base">Buat Pengingat Baru</h3>
+        <button onclick="closeModal('modal-reminder')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <form id="form-reminder" class="space-y-3">
+        <input type="hidden" id="rem-id">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Judul Pengingat / Pengumuman</label>
+          <input type="text" id="rem-judul" required placeholder="Cth: Penyetoran Data LAKIP Triwulan I" class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Deskripsi / Pesan</label>
+          <textarea id="rem-pesan" rows="3" required placeholder="Tuliskan instruksi atau pengumuman..." class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500"></textarea>
+        </div>
+        <!-- Input Tautan Surat (Requirement 8) -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Tautan Surat / Dokumen Pendukung (Opsional)</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+              <i class="fa-solid fa-link text-xs"></i>
+            </span>
+            <input type="url" id="rem-tautan-surat" placeholder="https://drive.google.com/... atau tautan surat edaran" class="w-full pl-8 pr-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <p class="text-[11px] text-slate-400 mt-1">Tautan ini akan tampil di bawah deskripsi pengumuman pada tampilan pengguna.</p>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal Mulai</label>
+            <input type="date" id="rem-tgl-mulai" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Batas Waktu (Deadline)</label>
+            <input type="date" id="rem-deadline" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Status</label>
+          <select id="rem-status" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 bg-white">
+            <option value="Aktif">Aktif</option>
+            <option value="Selesai">Selesai</option>
+            <option value="Arsip">Arsip</option>
+          </select>
+        </div>
+        <div class="pt-4 flex justify-end space-x-3 border-t border-slate-100">
+          <button type="button" onclick="closeModal('modal-reminder')" class="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl">Batal</button>
+          <button type="submit" class="px-5 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md">Simpan Pengingat</button>
         </div>
       </form>
     </div>
@@ -762,6 +941,7 @@
       templates: [],
       reminders: [],
       users: [],
+      instansi: [], // Requirement 4
       settings: {},
       chartInstance: null
     };
@@ -842,13 +1022,31 @@
       }
     }
 
-    const WEAK_PASSWORDS = ["123456", "admin123", "password", "user123", "12345678", "admin", "123456789", "pass123", "qwerty"];
+    function toggleCustomPasswordVisibility(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (!input) return;
+      const isMasked = input.style.webkitTextSecurity === 'disc' || input.style.textSecurity === 'disc';
+      if (isMasked) {
+        input.style.webkitTextSecurity = 'none';
+        input.style.textSecurity = 'none';
+        if (icon) {
+          icon.classList.remove('fa-eye');
+          icon.classList.add('fa-eye-slash');
+        }
+      } else {
+        input.style.webkitTextSecurity = 'disc';
+        input.style.textSecurity = 'disc';
+        if (icon) {
+          icon.classList.remove('fa-eye-slash');
+          icon.classList.add('fa-eye');
+        }
+      }
+    }
+
     function validatePasswordClient(pass) {
       if (!pass || pass.trim().length < 6) {
         return "Password minimal harus 6 karakter!";
-      }
-      if (WEAK_PASSWORDS.includes(pass.trim().toLowerCase())) {
-        return "Password '" + pass + "' terlalu umum dan terdeteksi berisiko bocor oleh browser! Gunakan kombinasi password unik seperti Admin#SimData2026!.";
       }
       return null;
     }
@@ -879,14 +1077,6 @@
       }
     }
 
-    // ==========================================================================
-    // APPLICATION INITIALIZATION & AUTH
-    // ==========================================================================
-    window.addEventListener('DOMContentLoaded', () => {
-      initApp();
-      setupEventListeners();
-    });
-
     async function initApp() {
       if (!AppState.token) {
         showLoginView();
@@ -900,6 +1090,7 @@
         AppState.templates = data.templates || [];
         AppState.reminders = data.reminders || [];
         AppState.users = data.users || [];
+        AppState.instansi = data.instansi || [];
         AppState.settings = data.settings || {};
 
         // Default Master Template jika belum ada dari backend
@@ -909,7 +1100,8 @@
             nama_template: 'Template Indikator Permintaan Data',
             tahun: '2026',
             deskripsi: 'Master template dokumen indikator pengumpulan data instansi pemerintah',
-            link_drive: 'https://drive.google.com/drive/folders/1goO7fDcAegX3m944nNr5iVxfN_AuyW-I'
+            link_drive: 'https://drive.google.com/drive/folders/1goO7fDcAegX3m944nNr5iVxfN_AuyW-I',
+            target_instansi: 'ALL'
           }];
         }
 
@@ -948,13 +1140,33 @@
         document.getElementById('setting-app-org').value = AppState.settings.app_org;
       }
 
-      // Restriksi Menu Role Admin / User
+      // Restriksi Menu Role Admin / User (Requirement 3)
       const adminElements = document.querySelectorAll('.admin-only');
       if (u.role === 'Admin') {
         adminElements.forEach(el => el.classList.remove('hidden'));
       } else {
         adminElements.forEach(el => el.classList.add('hidden'));
       }
+
+      // Drive Template Utama setup (Requirement 5):
+      // Untuk admin: sembunyikan tombol Drive Template Utama.
+      // Untuk user: tampilkan tombol dengan link berdasarkan drive template instansi terkait user.
+      const userDriveBtn = document.getElementById('btn-user-drive-template');
+      const thTplTarget = document.getElementById('th-tpl-target');
+      if (userDriveBtn) {
+        if (u.role === 'Admin') {
+          userDriveBtn.classList.add('hidden');
+          if (thTplTarget) thTplTarget.classList.remove('hidden');
+        } else {
+          userDriveBtn.classList.remove('hidden');
+          if (thTplTarget) thTplTarget.classList.add('hidden');
+          const myIns = AppState.instansi.find(i => (i.nama_instansi || '').trim().toLowerCase() === (u.instansi || '').trim().toLowerCase());
+          userDriveBtn.href = myIns && myIns.link_drive_template ? myIns.link_drive_template : 'https://drive.google.com';
+        }
+      }
+
+      // Populate Dropdown Instansi
+      populateInstansiDropdowns();
 
       // Render Active Reminder Banner
       renderActiveReminderBanner();
@@ -966,11 +1178,61 @@
       renderVerificationQueue();
       if (u.role === 'Admin') {
         renderUsers();
+        renderInstansi();
       }
       renderMonitoring();
       renderReminders();
 
       showLoader(false);
+    }
+
+    /**
+     * Populate dynamic Instansi dropdowns & checklist (Requirement 4 & 5)
+     */
+    function populateInstansiDropdowns() {
+      const usrSelect = document.getElementById('usr-instansi');
+      if (usrSelect) {
+        const currentVal = usrSelect.value;
+        usrSelect.innerHTML = '<option value="">-- Pilih Instansi --</option>';
+        AppState.instansi.forEach(ins => {
+          const opt = document.createElement('option');
+          opt.value = ins.nama_instansi;
+          opt.textContent = ins.nama_instansi;
+          usrSelect.appendChild(opt);
+        });
+        if (currentVal) usrSelect.value = currentVal;
+      }
+    }
+
+    function renderInstansiChecklist(selectedList = []) {
+      const container = document.getElementById('tpl-target-checklist');
+      if (!container) return;
+      container.innerHTML = '';
+
+      if (!AppState.instansi || AppState.instansi.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-400 py-1">Belum ada data instansi.</p>';
+        return;
+      }
+
+      const selectedNorm = selectedList.map(s => s.trim().toLowerCase());
+      const isAllSelected = selectedList.includes('ALL') || selectedList.length === 0;
+
+      AppState.instansi.forEach(ins => {
+        const isChecked = isAllSelected || selectedNorm.includes(ins.nama_instansi.trim().toLowerCase());
+        const label = document.createElement('label');
+        label.className = "flex items-center space-x-2 p-1.5 hover:bg-white rounded-lg cursor-pointer transition";
+        label.innerHTML = `
+          <input type="checkbox" name="tpl-instansi-item" value="${ins.nama_instansi}" ${isChecked ? 'checked' : ''} class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500">
+          <span class="text-slate-700 font-medium">${ins.nama_instansi}</span>
+        `;
+        container.appendChild(label);
+      });
+    }
+
+    function toggleAllTemplateChecklist(checked) {
+      document.querySelectorAll('#tpl-target-checklist input[type="checkbox"]').forEach(cb => {
+        cb.checked = checked;
+      });
     }
 
     // ==========================================================================
@@ -984,6 +1246,29 @@
         document.getElementById('banner-reminder-title').textContent = activeRem.judul;
         document.getElementById('banner-reminder-msg').textContent = activeRem.pesan;
         document.getElementById('banner-reminder-deadline').textContent = formatIndonesianDateTime(activeRem.deadline, false);
+
+        // Requirement 8: Tampilkan Tautan Surat jika ada
+        let suratContainer = document.getElementById('banner-reminder-surat-box');
+        if (!suratContainer) {
+          suratContainer = document.createElement('div');
+          suratContainer.id = 'banner-reminder-surat-box';
+          document.getElementById('banner-reminder-msg').parentNode.appendChild(suratContainer);
+        }
+        if (activeRem.tautan_surat && activeRem.tautan_surat.trim() !== '') {
+          suratContainer.innerHTML = `
+            <div class="mt-2.5">
+              <a href="${activeRem.tautan_surat}" target="_blank" class="inline-flex items-center space-x-1.5 text-xs font-semibold text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300 px-3 py-1.5 rounded-lg transition">
+                <i class="fa-solid fa-file-pdf text-amber-700"></i>
+                <span>Buka Surat / Dokumen Pendukung</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+              </a>
+            </div>
+          `;
+          suratContainer.classList.remove('hidden');
+        } else {
+          suratContainer.classList.add('hidden');
+        }
+
         banner.classList.remove('hidden');
       } else {
         banner.classList.add('hidden');
@@ -1039,11 +1324,23 @@
       const tbody = document.getElementById('tbl-templates-body');
       tbody.innerHTML = '';
       const q = query.toLowerCase().trim();
+      const isAdmin = AppState.currentUser && AppState.currentUser.role === 'Admin';
+      const userInstansi = (AppState.currentUser && AppState.currentUser.instansi || '').trim().toLowerCase();
 
       const filtered = AppState.templates.filter(t => {
-        return (t.nama_template || '').toLowerCase().includes(q) ||
+        const matchQuery = (t.nama_template || '').toLowerCase().includes(q) ||
                (t.tahun || '').toString().includes(q) ||
                (t.deskripsi || '').toLowerCase().includes(q);
+        if (!matchQuery) return false;
+
+        // Requirement 5: untuk user, hanya tampilkan jika template dichecklist untuk instansi terkait user
+        if (!isAdmin) {
+          if (!t.target_instansi || t.target_instansi.trim() === "" || t.target_instansi === "ALL") return true;
+          const targetList = t.target_instansi.split(",").map(s => s.trim().toLowerCase());
+          return targetList.includes(userInstansi);
+        }
+
+        return true;
       });
 
       if (filtered.length === 0) {
@@ -1055,18 +1352,36 @@
       filtered.forEach(t => {
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50/80 transition";
+
+        // Badges Target Instansi untuk tampilan Admin
+        let targetBadges = '';
+        if (isAdmin) {
+          if (!t.target_instansi || t.target_instansi.trim() === "" || t.target_instansi === "ALL") {
+            targetBadges = `<span class="px-2 py-0.5 text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full">Semua Instansi</span>`;
+          } else {
+            const list = t.target_instansi.split(",").map(s => s.trim());
+            if (list.length <= 2) {
+              targetBadges = list.map(item => `<span class="inline-block px-2 py-0.5 text-[10px] font-semibold bg-slate-100 text-slate-700 rounded-full mr-1 mb-1">${item}</span>`).join('');
+            } else {
+              targetBadges = `<span class="px-2 py-0.5 text-[10px] font-semibold bg-indigo-50 text-indigo-700 rounded-full border border-indigo-200">${list.length} Instansi Terpilih</span>`;
+            }
+          }
+        }
+
         tr.innerHTML = `
           <td class="py-3 px-4 font-semibold text-slate-800">${t.nama_template}</td>
           <td class="py-3 px-4 text-slate-600">${t.tahun}</td>
           <td class="py-3 px-4 text-slate-500 text-xs max-w-xs truncate">${t.deskripsi || '-'}</td>
+          ${isAdmin ? `<td class="py-3 px-4 text-xs">${targetBadges}</td>` : ''}
           <td class="py-3 px-4 text-center">
             <a href="${t.link_drive}" target="_blank" class="inline-flex items-center space-x-1 text-xs text-indigo-600 hover:underline font-semibold bg-indigo-50 px-2.5 py-1 rounded-lg">
               <i class="fa-solid fa-arrow-up-right-from-square text-[11px]"></i>
               <span>Buka Template</span>
             </a>
           </td>
-          <td class="py-3 px-4 text-right">
-            ${AppState.currentUser && AppState.currentUser.role === 'Admin' ? `
+          <td class="py-3 px-4 text-right space-x-1">
+            ${isAdmin ? `
+              <button onclick="editTemplate('${t.id}')" class="text-xs text-indigo-600 hover:text-indigo-800 p-1.5" title="Ubah Template"><i class="fa-solid fa-pen-to-square"></i></button>
               <button onclick="deleteTemplate('${t.id}')" class="text-xs text-rose-600 hover:text-rose-800 p-1.5" title="Hapus Template"><i class="fa-solid fa-trash"></i></button>
             ` : '-'}
           </td>
@@ -1079,6 +1394,8 @@
       const tbody = document.getElementById('tbl-submissions-body');
       tbody.innerHTML = '';
       const q = query.toLowerCase().trim();
+      const currentUser = AppState.currentUser;
+      const isAdmin = currentUser && currentUser.role === 'Admin';
 
       const filtered = AppState.submissions.filter(s => {
         const matchText = (s.instansi || '').toLowerCase().includes(q) ||
@@ -1100,6 +1417,9 @@
         let badgeColor = 'bg-amber-50 text-amber-600 border-amber-200';
         if (s.status === 'Disetujui') badgeColor = 'bg-emerald-50 text-emerald-600 border-emerald-200';
         if (s.status === 'Ditolak') badgeColor = 'bg-rose-50 text-rose-600 border-rose-200';
+
+        const canEdit = isAdmin || (currentUser && String(s.user_id) === String(currentUser.id));
+        const canDelete = isAdmin || (currentUser && String(s.user_id) === String(currentUser.id));
 
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50/80 transition";
@@ -1123,7 +1443,12 @@
           </td>
           <td class="py-3 px-4 text-xs text-slate-500">${s.catatan || '-'}</td>
           <td class="py-3 px-4 text-right space-x-1">
-            <button onclick="deleteSubmission('${s.id}')" class="text-xs text-rose-600 hover:text-rose-800 p-1.5" title="Hapus Pengajuan"><i class="fa-solid fa-trash"></i></button>
+            ${canEdit ? `
+              <button onclick="editSubmission('${s.id}')" class="text-xs text-indigo-600 hover:text-indigo-800 p-1.5" title="Ubah Pengajuan"><i class="fa-solid fa-pen-to-square"></i></button>
+            ` : ''}
+            ${canDelete ? `
+              <button onclick="deleteSubmission('${s.id}')" class="text-xs text-rose-600 hover:text-rose-800 p-1.5" title="Hapus Pengajuan"><i class="fa-solid fa-trash"></i></button>
+            ` : ''}
           </td>
         `;
         tbody.appendChild(tr);
@@ -1228,23 +1553,81 @@
         return;
       }
 
+      const isAdmin = AppState.currentUser && AppState.currentUser.role === 'Admin';
+
       AppState.reminders.forEach(r => {
         const card = document.createElement('div');
-        card.className = "bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm relative";
+        card.className = "bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm relative flex flex-col justify-between";
         card.innerHTML = `
-          <div class="flex justify-between items-start mb-2">
-            <h4 class="font-bold text-slate-800 text-sm">${r.judul}</h4>
-            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full ${r.status === 'Aktif' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'}">${r.status}</span>
+          <div>
+            <div class="flex justify-between items-start mb-2">
+              <h4 class="font-bold text-slate-800 text-sm">${r.judul}</h4>
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded-full ${r.status === 'Aktif' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'}">${r.status}</span>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed mb-3">${r.pesan}</p>
+
+            <!-- Requirement 8: Tautan Surat tampil di bawah deskripsi view -->
+            ${r.tautan_surat && r.tautan_surat.trim() !== '' ? `
+              <div class="mb-4">
+                <a href="${r.tautan_surat}" target="_blank" class="inline-flex items-center space-x-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200/80 px-3 py-1.5 rounded-lg transition">
+                  <i class="fa-solid fa-file-pdf text-rose-500"></i>
+                  <span>Buka Tautan Surat / Dokumen</span>
+                  <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                </a>
+              </div>
+            ` : ''}
           </div>
-          <p class="text-xs text-slate-600 leading-relaxed mb-4">${r.pesan}</p>
+
           <div class="flex items-center justify-between text-[11px] text-slate-400 pt-3 border-t border-slate-100">
             <span>Deadline: <strong class="text-slate-700">${formatIndonesianDateTime(r.deadline, false)}</strong></span>
-            ${AppState.currentUser && AppState.currentUser.role === 'Admin' ? `
-              <button onclick="deleteReminder('${r.id}')" class="text-rose-600 hover:underline">Hapus</button>
+            ${isAdmin ? `
+              <div class="space-x-2">
+                <button onclick="editReminder('${r.id}')" class="text-indigo-600 hover:underline font-semibold">Ubah</button>
+                <button onclick="deleteReminder('${r.id}')" class="text-rose-600 hover:underline">Hapus</button>
+              </div>
             ` : ''}
           </div>
         `;
         container.appendChild(card);
+      });
+    }
+
+    function renderInstansi(query = "") {
+      const tbody = document.getElementById('tbl-instansi-body');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      const q = query.toLowerCase().trim();
+
+      const filtered = AppState.instansi.filter(ins => {
+        return (ins.nama_instansi || '').toLowerCase().includes(q);
+      });
+
+      const emptyInstansi = document.getElementById('empty-instansi');
+      if (filtered.length === 0) {
+        if (emptyInstansi) emptyInstansi.classList.remove('hidden');
+        return;
+      }
+      if (emptyInstansi) emptyInstansi.classList.add('hidden');
+
+      filtered.forEach(ins => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50/80 transition";
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-semibold text-slate-800">${ins.nama_instansi}</td>
+          <td class="py-3 px-4">
+            <a href="${ins.link_drive_template || '#'}" target="_blank" class="inline-flex items-center space-x-1.5 text-xs text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 font-semibold px-2.5 py-1 rounded-lg transition border border-indigo-100">
+              <i class="fa-solid fa-folder-open text-[11px]"></i>
+              <span>Drive Template</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+            </a>
+          </td>
+          <td class="py-3 px-4 text-center text-xs text-slate-400">${formatIndonesianDateTime(ins.created_at, false)}</td>
+          <td class="py-3 px-4 text-right space-x-1">
+            <button onclick="editInstansi('${ins.id}')" class="text-xs text-indigo-600 hover:text-indigo-800 p-1.5" title="Ubah Instansi"><i class="fa-solid fa-pen-to-square"></i></button>
+            <button onclick="deleteInstansi('${ins.id}')" class="text-xs text-rose-600 hover:text-rose-800 p-1.5" title="Hapus Instansi"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
       });
     }
 
@@ -1276,6 +1659,7 @@
             <span class="px-2 py-0.5 text-[10px] font-bold rounded-full ${u.status === 'Aktif' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}">${u.status}</span>
           </td>
           <td class="py-3 px-4 text-right space-x-1">
+            <button onclick="editUser('${u.id}')" class="text-xs text-indigo-600 hover:text-indigo-800 p-1.5" title="Ubah Akun"><i class="fa-solid fa-pen-to-square"></i></button>
             <button onclick="deleteUser('${u.id}')" class="text-xs text-rose-600 hover:text-rose-800 p-1.5" title="Hapus Akun"><i class="fa-solid fa-trash"></i></button>
           </td>
         `;
@@ -1288,22 +1672,40 @@
     // ==========================================================================
 
     function setupEventListeners() {
-      // Login Form Submit
-      document.getElementById('form-login').addEventListener('submit', async (e) => {
-        e.preventDefault();
+      // Login Submit Handler
+      const handleLogin = async () => {
         const u = document.getElementById('login-username').value;
         const p = document.getElementById('login-password').value;
+
+        if (!u || !p) {
+          showCustomAlert("Peringatan", "Silakan masukkan username dan password!");
+          return;
+        }
 
         try {
           const res = await callBackend('loginUser', { username: u, password: p });
           AppState.token = res.token;
           localStorage.setItem('simdata_token', res.token);
           await initApp();
-          if (res.notice) {
-            showCustomAlert("Informasi Keamanan Password", res.notice);
-          }
         } catch (err) {
           // Handled in callBackend
+        }
+      };
+
+      const btnSubmitLogin = document.getElementById('btn-submit-login');
+      if (btnSubmitLogin) {
+        btnSubmitLogin.addEventListener('click', handleLogin);
+      }
+
+      ['login-username', 'login-password'].forEach(id => {
+        const elem = document.getElementById(id);
+        if (elem) {
+          elem.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleLogin();
+            }
+          });
         }
       });
 
@@ -1346,23 +1748,26 @@
         });
       }
 
-      // Form Master Template Submit
+      // Form Master Template Submit (Requirement 5 & 6)
       const formTpl = document.getElementById('form-template');
       if (formTpl) {
         formTpl.addEventListener('submit', async (e) => {
           e.preventDefault();
+          const selectedCheckboxes = Array.from(document.querySelectorAll('#tpl-target-checklist input[type="checkbox"]:checked')).map(cb => cb.value);
+          const isAll = selectedCheckboxes.length === AppState.instansi.length || selectedCheckboxes.length === 0;
+
           const tplData = {
             id: document.getElementById('tpl-id').value || 'tpl_' + Date.now(),
             nama_template: document.getElementById('tpl-nama').value,
             tahun: document.getElementById('tpl-tahun').value,
             deskripsi: document.getElementById('tpl-deskripsi').value,
-            link_drive: document.getElementById('tpl-link').value
+            link_drive: document.getElementById('tpl-link').value,
+            target_instansi: isAll ? "ALL" : selectedCheckboxes.join(", ")
           };
 
           try {
             await callBackend('saveMasterTemplate', { token: AppState.token, tplData: tplData });
           } catch (err) {
-            // Fallback lokal jika backend external belum terhubung
             const idx = AppState.templates.findIndex(t => t.id === tplData.id);
             if (idx >= 0) AppState.templates[idx] = tplData;
             else AppState.templates.unshift(tplData);
@@ -1370,17 +1775,18 @@
 
           closeModal('modal-template');
           showCustomAlert("Berhasil", "Master Template berhasil disimpan!");
-          renderTemplates();
+          await initApp();
         });
       }
 
-      // Form Pengajuan Data Submit
+      // Form Pengajuan Data Submit (Requirement 6)
       const formSub = document.getElementById('form-submission');
       if (formSub) {
         formSub.addEventListener('submit', async (e) => {
           e.preventDefault();
           const subData = {
-            id: document.getElementById('sub-id').value,
+            id: document.getElementById('sub-id').value || '',
+            instansi: document.getElementById('sub-instansi').value,
             nama_pengisi: document.getElementById('sub-nama-pengisi').value,
             jabatan: document.getElementById('sub-jabatan').value,
             tahun_data: document.getElementById('sub-tahun').value,
@@ -1392,6 +1798,58 @@
             await callBackend('saveSubmission', { token: AppState.token, subData: subData });
             closeModal('modal-submission');
             showCustomAlert("Berhasil", "Pengajuan data telah tersimpan!");
+            await initApp();
+          } catch (err) {}
+        });
+      }
+
+      // Form Kelola Instansi Submit (Requirement 4 & 6)
+      const formIns = document.getElementById('form-instansi');
+      if (formIns) {
+        formIns.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const insData = {
+            id: document.getElementById('ins-id').value || '',
+            nama_instansi: document.getElementById('ins-nama').value,
+            link_drive_template: document.getElementById('ins-drive-template').value
+          };
+
+          try {
+            await callBackend('saveInstansi', { token: AppState.token, instansiData: insData });
+            closeModal('modal-instansi');
+            showCustomAlert("Berhasil", "Data instansi berhasil disimpan!");
+            await initApp();
+          } catch (err) {}
+        });
+      }
+
+      // Tombol Buat Pengingat Baru (Requirement 7)
+      const btnAddRem = document.getElementById('btn-add-reminder');
+      if (btnAddRem) {
+        btnAddRem.addEventListener('click', () => {
+          openReminderModal();
+        });
+      }
+
+      // Form Pengingat Submit (Requirement 7, 8 & 6)
+      const formRem = document.getElementById('form-reminder');
+      if (formRem) {
+        formRem.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const remData = {
+            id: document.getElementById('rem-id').value || '',
+            judul: document.getElementById('rem-judul').value,
+            pesan: document.getElementById('rem-pesan').value,
+            tautan_surat: document.getElementById('rem-tautan-surat').value,
+            tanggal_mulai: document.getElementById('rem-tgl-mulai').value,
+            deadline: document.getElementById('rem-deadline').value,
+            status: document.getElementById('rem-status').value
+          };
+
+          try {
+            await callBackend('saveReminder', { token: AppState.token, remData: remData });
+            closeModal('modal-reminder');
+            showCustomAlert("Berhasil", "Pengingat berhasil disimpan!");
             await initApp();
           } catch (err) {}
         });
@@ -1437,7 +1895,7 @@
         });
       }
 
-      // User Form Submit (Admin) - Default Role User
+      // User Form Submit (Admin) - Default Role User (Requirement 4 & 6)
       const formUsr = document.getElementById('form-user');
       if (formUsr) {
         formUsr.addEventListener('submit', async (e) => {
@@ -1478,6 +1936,13 @@
         });
       }
 
+      const searchIns = document.getElementById('search-instansi');
+      if (searchIns) {
+        searchIns.addEventListener('input', (e) => {
+          renderInstansi(e.target.value);
+        });
+      }
+
       const searchSub = document.getElementById('search-submissions');
       if (searchSub) {
         searchSub.addEventListener('input', (e) => {
@@ -1511,9 +1976,13 @@
       }
     }
 
+    /**
+     * Switch Navigation Tab (Requirement 3: Fix admin menus popping up for users)
+     */
     function switchTab(targetId) {
       // Security Check: Role Authorization Guard
-      if (AppState.currentUser && AppState.currentUser.role !== 'Admin' && (targetId === 'sec-users' || targetId === 'sec-verification' || targetId === 'sec-settings' || targetId === 'sec-monitoring')) {
+      const adminTabs = ['sec-users', 'sec-verification', 'sec-settings', 'sec-monitoring', 'sec-instansi'];
+      if (AppState.currentUser && AppState.currentUser.role !== 'Admin' && adminTabs.includes(targetId)) {
         showCustomAlert("Akses Ditolak", "Halaman ini hanya dapat diakses oleh Admin sistem.", "error");
         switchTab('sec-dashboard');
         return;
@@ -1523,19 +1992,32 @@
       const targetSec = document.getElementById(targetId);
       if (targetSec) targetSec.classList.remove('hidden');
 
-      // Update Nav Class
+      // Update Nav Styling without destroying hidden/admin-only classes
       document.querySelectorAll('.nav-item').forEach(nav => {
-        if (nav.getAttribute('data-target') === targetId) {
-          nav.className = "nav-item flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition text-indigo-400 bg-indigo-950/60 border border-indigo-800/40";
+        const isActive = nav.getAttribute('data-target') === targetId;
+        if (isActive) {
+          nav.classList.add('text-indigo-400', 'bg-indigo-950/60', 'border', 'border-indigo-800/40');
+          nav.classList.remove('text-slate-400', 'hover:text-slate-200', 'hover:bg-slate-800/60');
         } else {
-          nav.className = "nav-item flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition text-slate-400 hover:text-slate-200 hover:bg-slate-800/60";
+          nav.classList.remove('text-indigo-400', 'bg-indigo-950/60', 'border', 'border-indigo-800/40');
+          nav.classList.add('text-slate-400', 'hover:text-slate-200', 'hover:bg-slate-800/60');
         }
       });
+
+      // Crucial Fix (Requirement 3): Keep admin-only menus hidden for non-admin users
+      if (AppState.currentUser) {
+        const isAdmin = AppState.currentUser.role === 'Admin';
+        document.querySelectorAll('.admin-only').forEach(el => {
+          if (isAdmin) el.classList.remove('hidden');
+          else el.classList.add('hidden');
+        });
+      }
 
       // Update Header Title
       const titles = {
         'sec-dashboard': 'Dashboard Utama',
         'sec-templates': 'Master Data Template',
+        'sec-instansi': 'Kelola Data Instansi',
         'sec-submissions': 'Formulir Pengumpulan Data',
         'sec-verification': 'Verifikasi Data Instansi',
         'sec-monitoring': 'Monitoring Progres Kepatuhan',
@@ -1550,25 +2032,192 @@
     }
 
     // ==========================================================================
-    // MODAL DIALOG CONTROLS
+    // MODAL DIALOG CONTROLS & FULL CRUD (Requirement 6)
     // ==========================================================================
 
-    function openTemplateModal() {
+    function openTemplateModal(editTpl = null) {
       document.getElementById('form-template').reset();
-      document.getElementById('tpl-id').value = "";
-      document.getElementById('tpl-link').value = "https://drive.google.com/drive/folders/1goO7fDcAegX3m944nNr5iVxfN_AuyW-I";
+      if (editTpl) {
+        document.getElementById('modal-template-title').textContent = "Ubah Master Template";
+        document.getElementById('tpl-id').value = editTpl.id || "";
+        document.getElementById('tpl-nama').value = editTpl.nama_template || "";
+        document.getElementById('tpl-tahun').value = editTpl.tahun || "2026";
+        document.getElementById('tpl-deskripsi').value = editTpl.deskripsi || "";
+        document.getElementById('tpl-link').value = editTpl.link_drive || "";
+        const targets = editTpl.target_instansi ? editTpl.target_instansi.split(',').map(s => s.trim()) : [];
+        renderInstansiChecklist(targets);
+      } else {
+        document.getElementById('modal-template-title').textContent = "Tambah Master Template";
+        document.getElementById('tpl-id').value = "";
+        document.getElementById('tpl-tahun').value = "2026";
+        document.getElementById('tpl-link').value = "https://drive.google.com/drive/folders/1goO7fDcAegX3m944nNr5iVxfN_AuyW-I";
+        renderInstansiChecklist(['ALL']);
+      }
       openModal('modal-template');
     }
 
-    function openSubmissionModal() {
+    function editTemplate(tplId) {
+      const tpl = AppState.templates.find(t => t.id === tplId);
+      if (tpl) openTemplateModal(tpl);
+    }
+
+    async function deleteTemplate(tplId) {
+      showCustomConfirm("Hapus Template", "Apakah Anda yakin ingin menghapus template ini?", async () => {
+        try {
+          await callBackend('deleteMasterTemplate', { token: AppState.token, tplId: tplId });
+        } catch (err) {
+          AppState.templates = AppState.templates.filter(t => t.id !== tplId);
+        }
+        showCustomAlert("Terhapus", "Template berhasil dihapus.");
+        renderTemplates();
+      });
+    }
+
+    function openInstansiModal(editIns = null) {
+      document.getElementById('form-instansi').reset();
+      if (editIns) {
+        document.getElementById('modal-instansi-title').textContent = "Ubah Data Instansi";
+        document.getElementById('ins-id').value = editIns.id || "";
+        document.getElementById('ins-nama').value = editIns.nama_instansi || "";
+        document.getElementById('ins-drive-template').value = editIns.link_drive_template || "";
+      } else {
+        document.getElementById('modal-instansi-title').textContent = "Tambah Instansi";
+        document.getElementById('ins-id').value = "";
+        document.getElementById('ins-drive-template').value = "https://drive.google.com/drive/folders/1goO7fDcAegX3m944nNr5iVxfN_AuyW-I";
+      }
+      openModal('modal-instansi');
+    }
+
+    function editInstansi(insId) {
+      const ins = AppState.instansi.find(i => i.id === insId);
+      if (ins) openInstansiModal(ins);
+    }
+
+    async function deleteInstansi(insId) {
+      showCustomConfirm("Hapus Instansi", "Apakah Anda yakin ingin menghapus data instansi ini? Pengguna dan template terkait mungkin terpengaruh.", async () => {
+        try {
+          await callBackend('deleteInstansi', { token: AppState.token, instansiId: insId });
+          showCustomAlert("Terhapus", "Data instansi berhasil dihapus.");
+          await initApp();
+        } catch (err) {}
+      });
+    }
+
+    function openSubmissionModal(editSub = null) {
       document.getElementById('form-submission').reset();
-      document.getElementById('sub-id').value = "";
-      document.getElementById('sub-link').value = "https://drive.google.com/drive/folders/1z0CtFO_7oNgiYpKvAjo_Vd3P00d9IpuW";
-      if (AppState.currentUser) {
-        document.getElementById('sub-instansi').value = AppState.currentUser.instansi || '';
-        document.getElementById('sub-nama-pengisi').value = AppState.currentUser.fullname || '';
+      if (editSub) {
+        document.getElementById('modal-sub-title').textContent = "Ubah Pengajuan Data";
+        document.getElementById('sub-id').value = editSub.id || "";
+        document.getElementById('sub-instansi').value = editSub.instansi || "";
+        document.getElementById('sub-nama-pengisi').value = editSub.nama_pengisi || "";
+        document.getElementById('sub-jabatan').value = editSub.jabatan || "";
+        document.getElementById('sub-tahun').value = editSub.tahun_data || "2026";
+        document.getElementById('sub-indikator').value = editSub.indikator || "";
+        document.getElementById('sub-link').value = editSub.link_folder || "";
+      } else {
+        document.getElementById('modal-sub-title').textContent = "Isi Pengajuan Data";
+        document.getElementById('sub-id').value = "";
+        document.getElementById('sub-tahun').value = "2026";
+        document.getElementById('sub-link').value = "https://drive.google.com/drive/folders/1z0CtFO_7oNgiYpKvAjo_Vd3P00d9IpuW";
+        if (AppState.currentUser) {
+          document.getElementById('sub-instansi').value = AppState.currentUser.instansi || '';
+          document.getElementById('sub-nama-pengisi').value = AppState.currentUser.fullname || '';
+        }
       }
       openModal('modal-submission');
+    }
+
+    function editSubmission(subId) {
+      const sub = AppState.submissions.find(s => s.id === subId);
+      if (sub) openSubmissionModal(sub);
+    }
+
+    async function deleteSubmission(subId) {
+      showCustomConfirm("Hapus Pengajuan", "Apakah Anda yakin ingin menghapus pengajuan data ini?", async () => {
+        try {
+          await callBackend('deleteSubmission', { token: AppState.token, subId: subId });
+          showCustomAlert("Terhapus", "Data berhasil dihapus.");
+          await initApp();
+        } catch (err) {}
+      });
+    }
+
+    function openReminderModal(editRem = null) {
+      document.getElementById('form-reminder').reset();
+      if (editRem) {
+        document.getElementById('modal-reminder-title').textContent = "Ubah Pengingat / Pengumuman";
+        document.getElementById('rem-id').value = editRem.id || "";
+        document.getElementById('rem-judul').value = editRem.judul || "";
+        document.getElementById('rem-pesan').value = editRem.pesan || "";
+        document.getElementById('rem-tautan-surat').value = editRem.tautan_surat || "";
+        document.getElementById('rem-tgl-mulai').value = editRem.tanggal_mulai ? editRem.tanggal_mulai.substring(0, 10) : "";
+        document.getElementById('rem-deadline').value = editRem.deadline ? editRem.deadline.substring(0, 10) : "";
+        document.getElementById('rem-status').value = editRem.status || "Aktif";
+      } else {
+        document.getElementById('modal-reminder-title').textContent = "Buat Pengingat Baru";
+        document.getElementById('rem-id').value = "";
+        const now = new Date().toISOString().substring(0, 10);
+        document.getElementById('rem-tgl-mulai').value = now;
+        const d = new Date();
+        d.setDate(d.getDate() + 14);
+        document.getElementById('rem-deadline').value = d.toISOString().substring(0, 10);
+        document.getElementById('rem-status').value = "Aktif";
+      }
+      openModal('modal-reminder');
+    }
+
+    function editReminder(remId) {
+      const rem = AppState.reminders.find(r => r.id === remId);
+      if (rem) openReminderModal(rem);
+    }
+
+    async function deleteReminder(remId) {
+      showCustomConfirm("Hapus Pengingat", "Hapus pengumuman ini?", async () => {
+        try {
+          await callBackend('deleteReminder', { token: AppState.token, remId: remId });
+          showCustomAlert("Terhapus", "Pengingat berhasil dihapus.");
+          await initApp();
+        } catch (err) {}
+      });
+    }
+
+    function openUserModal(editUsr = null) {
+      document.getElementById('form-user').reset();
+      populateInstansiDropdowns();
+      if (editUsr) {
+        document.getElementById('modal-user-title').textContent = "Ubah Data Pengguna";
+        document.getElementById('usr-id').value = editUsr.id || "";
+        document.getElementById('usr-username').value = editUsr.username || "";
+        document.getElementById('usr-fullname').value = editUsr.fullname || "";
+        document.getElementById('usr-instansi').value = editUsr.instansi || "";
+        document.getElementById('usr-role').value = editUsr.role || "User";
+        document.getElementById('usr-status').value = editUsr.status || "Aktif";
+        document.getElementById('usr-pass-help').textContent = "(Kosongkan jika tidak ingin ganti)";
+        document.getElementById('usr-password').required = false;
+      } else {
+        document.getElementById('modal-user-title').textContent = "Tambah Pengguna";
+        document.getElementById('usr-id').value = "";
+        document.getElementById('usr-role').value = "User";
+        document.getElementById('usr-status').value = "Aktif";
+        document.getElementById('usr-pass-help').textContent = "(Default: password123)";
+        document.getElementById('usr-password').required = false;
+      }
+      openModal('modal-user');
+    }
+
+    function editUser(userId) {
+      const usr = AppState.users.find(u => u.id === userId);
+      if (usr) openUserModal(usr);
+    }
+
+    async function deleteUser(userId) {
+      showCustomConfirm("Hapus Pengguna", "Apakah Anda yakin ingin menghapus akun ini?", async () => {
+        try {
+          await callBackend('deleteUser', { token: AppState.token, userId: userId });
+          showCustomAlert("Terhapus", "Pengguna berhasil dihapus.");
+          await initApp();
+        } catch (err) {}
+      });
     }
 
     function openVerifyModal(subId, instansi, indikator) {
@@ -1589,55 +2238,6 @@
         showCustomAlert("Berhasil", `Pengajuan telah di-set ${status}`);
         await initApp();
       } catch (err) {}
-    }
-
-    function openUserModal() {
-      document.getElementById('form-user').reset();
-      document.getElementById('usr-id').value = "";
-      document.getElementById('usr-role').value = "User";
-      openModal('modal-user');
-    }
-
-    async function deleteSubmission(subId) {
-      showCustomConfirm("Hapus Pengajuan", "Apakah Anda yakin ingin menghapus pengajuan data ini?", async () => {
-        try {
-          await callBackend('deleteSubmission', { token: AppState.token, subId: subId });
-          showCustomAlert("Terhapus", "Data berhasil dihapus.");
-          await initApp();
-        } catch (err) {}
-      });
-    }
-
-    async function deleteTemplate(tplId) {
-      showCustomConfirm("Hapus Template", "Apakah Anda yakin ingin menghapus template ini?", async () => {
-        try {
-          await callBackend('deleteMasterTemplate', { token: AppState.token, tplId: tplId });
-        } catch (err) {
-          AppState.templates = AppState.templates.filter(t => t.id !== tplId);
-        }
-        showCustomAlert("Terhapus", "Template berhasil dihapus.");
-        renderTemplates();
-      });
-    }
-
-    async function deleteReminder(remId) {
-      showCustomConfirm("Hapus Pengingat", "Hapus pengumuman ini?", async () => {
-        try {
-          await callBackend('deleteReminder', { token: AppState.token, remId: remId });
-          showCustomAlert("Terhapus", "Pengingat berhasil dihapus.");
-          await initApp();
-        } catch (err) {}
-      });
-    }
-
-    async function deleteUser(userId) {
-      showCustomConfirm("Hapus Pengguna", "Apakah Anda yakin ingin menghapus akun ini?", async () => {
-        try {
-          await callBackend('deleteUser', { token: AppState.token, userId: userId });
-          showCustomAlert("Terhapus", "Pengguna berhasil dihapus.");
-          await initApp();
-        } catch (err) {}
-      });
     }
 
     function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
