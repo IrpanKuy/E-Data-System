@@ -1,6 +1,11 @@
 // ==============================================================================
 // CONFIGURATION & GLOBAL CONSTANTS
 // ==============================================================================
+// ID Spreadsheet Database Google Sheets
+// Isi dengan ID Spreadsheet Anda (misal: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms")
+// Jika dikosongkan (""), sistem akan otomatis menggunakan Spreadsheet aktif tempat script ini terpasang.
+const SPREADSHEET_ID = "";
+
 const SHEETS = {
   USERS: "Users",
   INSTANSI: "Instansi",
@@ -9,6 +14,17 @@ const SHEETS = {
   REMINDERS: "Reminders",
   SETTINGS: "AppSettings",
 };
+
+/**
+ * Mengambil objek Spreadsheet berdasarkan SPREADSHEET_ID jika ditentukan,
+ * atau fallback ke getActiveSpreadsheet() jika SPREADSHEET_ID kosong.
+ */
+function getSpreadsheet() {
+  if (SPREADSHEET_ID && SPREADSHEET_ID.trim() !== "") {
+    return SpreadsheetApp.openById(SPREADSHEET_ID.trim());
+  }
+  return SpreadsheetApp.getActiveSpreadsheet();
+}
 
 /**
  * Menyajikan antarmuka utama WebApp (Index.html)
@@ -107,7 +123,7 @@ function doPost(e) {
  * Inisialisasi otomatis tabel Google Sheets & data awal (Seeder)
  */
 function setupDatabase() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
 
 
 
@@ -530,7 +546,7 @@ function cleanObjectDates(data) {
  * Membaca seluruh baris sheet menjadi Array of Objects
  */
 function getSheetData(sheetName) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(sheetName);
   if (!sheet) return [];
 
@@ -694,7 +710,7 @@ function saveInstansi(token, instansiData) {
   if (adminUser.role !== "Admin")
     throw new Error("Akses ditolak. Khusus Admin.");
 
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   let sheet = ss.getSheetByName(SHEETS.INSTANSI);
   if (!sheet) {
     setupDatabase();
@@ -752,7 +768,7 @@ function deleteInstansi(token, instansiId) {
   const adminUser = verifySessionToken(token);
   if (adminUser.role !== "Admin") throw new Error("Akses ditolak.");
 
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEETS.INSTANSI);
   if (!sheet) throw new Error("Tabel instansi tidak ditemukan.");
   const data = sheet.getDataRange().getValues();
@@ -775,7 +791,7 @@ function saveUser(token, userData) {
   if (adminUser.role !== "Admin")
     throw new Error("Akses ditolak. Khusus Admin.");
 
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEETS.USERS);
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
@@ -849,7 +865,7 @@ function deleteUser(token, userId) {
     throw new Error("Anda tidak dapat menghapus akun Anda sendiri!");
   }
 
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEETS.USERS);
   const data = sheet.getDataRange().getValues();
 
@@ -870,7 +886,7 @@ function saveMasterTemplate(token, tplData) {
   const adminUser = verifySessionToken(token);
   if (adminUser.role !== "Admin") throw new Error("Akses ditolak.");
 
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEETS.TEMPLATES);
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
@@ -923,7 +939,7 @@ function deleteMasterTemplate(token, tplId) {
   const adminUser = verifySessionToken(token);
   if (adminUser.role !== "Admin") throw new Error("Akses ditolak.");
 
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEETS.TEMPLATES);
   const data = sheet.getDataRange().getValues();
 
@@ -942,7 +958,7 @@ function deleteMasterTemplate(token, tplId) {
 
 function saveSubmission(token, subData) {
   const user = verifySessionToken(token);
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEETS.SUBMISSIONS);
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
@@ -1013,7 +1029,7 @@ function verifySubmission(token, subId, status, catatan) {
   if (adminUser.role !== "Admin")
     throw new Error("Akses ditolak. Khusus Admin.");
 
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEETS.SUBMISSIONS);
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
@@ -1038,7 +1054,7 @@ function verifySubmission(token, subId, status, catatan) {
 
 function deleteSubmission(token, subId) {
   const user = verifySessionToken(token);
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEETS.SUBMISSIONS);
   const data = sheet.getDataRange().getValues();
 
@@ -1063,7 +1079,7 @@ function saveReminder(token, remData) {
   const adminUser = verifySessionToken(token);
   if (adminUser.role !== "Admin") throw new Error("Akses ditolak.");
 
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEETS.REMINDERS);
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
@@ -1117,7 +1133,7 @@ function deleteReminder(token, remId) {
   const adminUser = verifySessionToken(token);
   if (adminUser.role !== "Admin") throw new Error("Akses ditolak.");
 
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEETS.REMINDERS);
   const data = sheet.getDataRange().getValues();
 
@@ -1132,7 +1148,7 @@ function deleteReminder(token, remId) {
 
 function changePassword(token, oldPass, newPass) {
   const user = verifySessionToken(token);
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEETS.USERS);
   const data = sheet.getDataRange().getValues();
 
@@ -1155,7 +1171,7 @@ function updateAppSettings(token, settingsData) {
   const adminUser = verifySessionToken(token);
   if (adminUser.role !== "Admin") throw new Error("Akses ditolak.");
 
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEETS.SETTINGS);
 
   sheet.clearContents();
@@ -1186,7 +1202,7 @@ function generateSeed(token = null, count = 50) {
   // Pastikan sheet & tabel utama sudah terinisialisasi
   setupDatabase();
 
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
 
   const instansiList = [
     "Dinas Kesehatan",
